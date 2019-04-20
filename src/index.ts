@@ -12,6 +12,7 @@ import createDiscoveryServer, { DiscoveryServer } from './discovery'
 import { randomBytes, createHash } from 'crypto'
 import fs = require('fs-extra')
 import getPort = require('get-port')
+import DJSON = require('deterministic-json')
 
 interface ApplicationConfig extends BaseApplicationConfig {
   rpcPort?: number
@@ -95,7 +96,9 @@ class LotionApp implements Application {
     if (!this.genesisPath) {
       this.genesisPath = join(this.home, 'config', 'genesis.json')
     }
-    this.genesis = fs.readFileSync(this.genesisPath, 'utf8')
+    let genesisJSON = fs.readFileSync(this.genesisPath, 'utf8')
+    let parsedGenesis = JSON.parse(genesisJSON)
+    this.genesis = DJSON.stringify(parsedGenesis)
   }
 
   private setHome() {
@@ -148,7 +151,6 @@ class LotionApp implements Application {
     // start discovery server
     this.discoveryServer = createDiscoveryServer({
       GCI: this.GCI,
-      genesis: this.genesis,
       rpcPort: this.ports.rpc
     })
 
